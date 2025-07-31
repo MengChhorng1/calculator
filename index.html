@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Colorful Calculator</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #ff6b6b, #4ecdc4, #45b7d1);
+            font-family: 'Arial', sans-serif;
+        }
+
+        .calculator {
+            background: #f0f0f0;
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 10px 10px 20px rgba(0, 0, 0, 0.2), -10px -10px 20px rgba(255, 255, 255, 0.8);
+            position: relative;
+            width: 320px;
+        }
+
+        .display-container {
+            margin-bottom: 20px;
+        }
+
+        .previous-display {
+            background: #fff;
+            padding: 10px;
+            border-radius: 10px;
+            text-align: right;
+            font-size: 1em;
+            color: #666;
+            box-shadow: inset 5px 5px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            min-height: 1.5em;
+        }
+
+        .display {
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: right;
+            font-size: 2em;
+            box-shadow: inset 5px 5px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+
+        .display.small-font {
+            font-size: 1.5em;
+        }
+
+        .display.very-small-font {
+            font-size: 1em;
+        }
+
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        button {
+            padding: 20px;
+            font-size: 1.2em;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(145deg, #e6e6e6, #ffffff);
+            box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.1), -5px -5px 10px rgba(255, 255, 255, 0.8);
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+        }
+
+        button:active {
+            box-shadow: inset 5px 5px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .operator {
+            background: linear-gradient(145deg, #ff9a8b, #ff6a88);
+            color: white;
+        }
+
+        .equals {
+            background: linear-gradient(145deg, #4facfe, #00f2fe);
+            color: white;
+        }
+
+        .clear {
+            background: linear-gradient(145deg, #ff6b6b, #ff8e53);
+            color: white;
+        }
+
+        .function {
+            background: linear-gradient(145deg, #a18cd1, #fbc2eb);
+            color: white;
+        }
+
+        .backspace {
+            background: linear-gradient(145deg, #f7b731, #f7b731);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <div class="display-container">
+            <div class="previous-display" id="previous-display"></div>
+            <div class="display" id="display">0</div>
+        </div>
+        <div class="buttons">
+            <button class="clear" onclick="clearDisplay()">C</button>
+            <button class="function" onclick="appendToDisplay('sqrt')">√</button>
+            <button class="function" onclick="appendToDisplay('%')">%</button>
+            <button class="backspace" onclick="backspace()">←</button>
+            <button onclick="appendToDisplay('7')">7</button>
+            <button onclick="appendToDisplay('8')">8</button>
+            <button onclick="appendToDisplay('9')">9</button>
+            <button class="operator" onclick="appendToDisplay('/')">/</button>
+            <button onclick="appendToDisplay('4')">4</button>
+            <button onclick="appendToDisplay('5')">5</button>
+            <button onclick="appendToDisplay('6')">6</button>
+            <button class="operator" onclick="appendToDisplay('*')">×</button>
+            <button onclick="appendToDisplay('1')">1</button>
+            <button onclick="appendToDisplay('2')">2</button>
+            <button onclick="appendToDisplay('3')">3</button>
+            <button class="operator" onclick="appendToDisplay('-')">-</button>
+            <button onclick="appendToDisplay('0')">0</button>
+            <button onclick="appendToDisplay('.')">.</button>
+            <button class="equals" onclick="calculate()">=</button>
+            <button class="operator" onclick="appendToDisplay('+')">+</button>
+        </div>
+    </div>
+    <script>
+        let display = document.getElementById('display');
+        let previousDisplay = document.getElementById('previous-display');
+        let currentInput = '';
+        let previousInput = '';
+        let lastInput = '';
+
+        function appendToDisplay(value) {
+            const operators = ['+', '-', '*', '/'];
+            const digits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+
+            if (value === 'sqrt') {
+                currentInput = 'Math.sqrt(' + (currentInput || '0') + ')';
+                display.textContent = currentInput;
+            } else if (value === '%') {
+                currentInput = (parseFloat(currentInput || '0') / 100).toString();
+                display.textContent = currentInput;
+            } else if (value === '.') {
+                if (!currentInput) {
+                    currentInput = '0.';
+                } else if (!currentInput.includes('.')) {
+                    currentInput += value;
+                }
+                display.textContent = currentInput;
+            } else if (operators.includes(value)) {
+                if (operators.includes(currentInput.slice(-1))) {
+                    currentInput = currentInput.slice(0, -1) + value;
+                    previousInput = previousInput.slice(0, -1) + value;
+                } else if (previousInput && !currentInput) {
+                    previousInput = previousInput.slice(0, -1) + value;
+                    previousDisplay.textContent = previousInput;
+                    display.textContent = '0';
+                } else if (previousInput && currentInput) {
+                    try {
+                        let fullExpression = previousInput + currentInput;
+                        let result = eval(fullExpression.replace('×', '*'));
+                        if (isNaN(result) || !isFinite(result)) {
+                            display.textContent = 'Error';
+                            previousDisplay.textContent = '';
+                            currentInput = '';
+                            previousInput = '';
+                        } else {
+                            previousInput = result.toString() + value;
+                            currentInput = '';
+                            previousDisplay.textContent = previousInput;
+                            display.textContent = '0';
+                        }
+                    } catch (e) {
+                        display.textContent = 'Error';
+                        previousDisplay.textContent = '';
+                        currentInput = '';
+                        previousInput = '';
+                    }
+                } else {
+                    previousInput = currentInput + value;
+                    currentInput = '';
+                    previousDisplay.textContent = previousInput;
+                    display.textContent = '0';
+                }
+            } else if (digits.includes(value)) {
+                currentInput += value;
+                // Remove leading zeros unless the input is "0" or starts with "0."
+                if (currentInput.startsWith('0') && !currentInput.startsWith('0.') && currentInput !== '0') {
+                    currentInput = currentInput.replace(/^0+/, '') || '0';
+                }
+                display.textContent = currentInput;
+            }
+            lastInput = value;
+            adjustFontSize();
+        }
+
+        function clearDisplay() {
+            currentInput = '';
+            previousInput = '';
+            display.textContent = '0';
+            previousDisplay.textContent = '';
+            adjustFontSize();
+        }
+
+        function backspace() {
+            currentInput = currentInput.slice(0, -1);
+            display.textContent = currentInput || '0';
+            adjustFontSize();
+        }
+
+        function calculate() {
+            try {
+                let fullExpression = previousInput + currentInput;
+                let result = eval(fullExpression.replace('×', '*'));
+                if (isNaN(result) || !isFinite(result)) {
+                    display.textContent = 'Error';
+                    previousDisplay.textContent = '';
+                    currentInput = '';
+                    previousInput = '';
+                } else {
+                    display.textContent = result;
+                    previousDisplay.textContent = '';
+                    currentInput = result.toString();
+                    previousInput = '';
+                }
+                adjustFontSize();
+            } catch (e) {
+                display.textContent = 'Error';
+                previousDisplay.textContent = '';
+                currentInput = '';
+                previousInput = '';
+            }
+        }
+
+        function adjustFontSize() {
+            const length = currentInput.length;
+            if (length > 15) {
+                display.classList.add('very-small-font');
+                display.classList.remove('small-font');
+            } else if (length > 10) {
+                display.classList.add('small-font');
+                display.classList.remove('very-small-font');
+            } else {
+                display.classList.remove('small-font', 'very-small-font');
+            }
+        }
+    </script>
+</body>
+</html>
